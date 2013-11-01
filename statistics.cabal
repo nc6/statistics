@@ -51,6 +51,7 @@ library
     Statistics.Constants
     Statistics.Distribution
     Statistics.Distribution.Beta
+    Statistics.Distribution.BetaBinomial
     Statistics.Distribution.Binomial
     Statistics.Distribution.CauchyLorentz
     Statistics.Distribution.ChiSquared
