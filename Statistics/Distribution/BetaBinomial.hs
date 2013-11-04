@@ -13,18 +13,25 @@
 module Statistics.Distribution.BetaBinomial 
   (
       BetaBinomialDistribution
+    , betaBinomialDistr
+    , improperBetaBinomialDistr
     , bbdAlpha
     , bbdBeta
     , bbdNumberOfTrials
   ) where
+  
+  import Data.Data (Data, Typeable)
+  import GHC.Generics (Generic)
+  
   import Numeric.SpecFunctions (choose, incompleteBeta)
+  
   import qualified Statistics.Distribution as D
 
   data BetaBinomialDistribution = BetaBinomialDistribution {
       bbdAlpha :: {-# UNPACK #-} !Double
     , bbdBeta :: {-# UNPACK #-} !Double
     , bbdNumberOfTrials :: {-# UNPACK #-} !Int
-  }
+  } deriving (Eq, Read, Show, Typeable, Data, Generic)
 
   -- | Create beta binomial distribution. Both shape parameters must be positive.
   betaBinomialDistr :: Double             -- ^ Shape parameter alpha
@@ -49,7 +56,7 @@ module Statistics.Distribution.BetaBinomial
   {-# INLINE improperBetaBinomialDistr #-}
 
   instance D.DiscreteDistr BetaBinomialDistribution where
-    probability d@(BetaBinomialDistribution a b n) k = (n `choose` k) * b1 / b2 where
+    probability (BetaBinomialDistribution a b n) k = (n `choose` k) * b1 / b2 where
       b1 = incompleteBeta (x + a) (n' - x + b) 1
       b2 = incompleteBeta a b 1
       x = fromIntegral k
@@ -57,7 +64,7 @@ module Statistics.Distribution.BetaBinomial
     {-# INLINE probability #-}
 
   instance D.Distribution BetaBinomialDistribution where
-    cumulative d@(BetaBinomialDistribution a b n) x
+    cumulative d@(BetaBinomialDistribution _ _ n) x
       | isNaN x      = error "Statistics.Distribution.BetaBinomialDistribution.cumulative: NaN argument"
       | isInfinite x = if x > 0 then 1 else 0
       | x' <= 0 = 0
@@ -76,6 +83,8 @@ module Statistics.Distribution.BetaBinomial
   instance D.Variance BetaBinomialDistribution where
     variance (BetaBinomialDistribution a b n) = let n' = fromIntegral n in
       (n'*a*b)*(a+b+n')/(((a+b)^2) * (a + b + 1))
+    {-# INLINE variance #-}
 
   instance D.MaybeVariance BetaBinomialDistribution where
     maybeVariance = Just . D.variance
+    {-# INLINE maybeVariance #-}
